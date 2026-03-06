@@ -126,7 +126,7 @@ export default function ResumeUpload({ onComplete }: ResumeUploadProps) {
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
                     Welcome to{" "}
                     <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-                        InterviewIQ
+                        Pixelmind
                     </span>
                 </h1>
                 <p className="text-[var(--text-secondary)] text-lg max-w-md mx-auto">

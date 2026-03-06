@@ -15,23 +15,31 @@ export interface MCQQuestion {
 
 interface OnboardingFlowProps {
     questions: MCQQuestion[];
+    onComplete?: () => void;
 }
 
 type SubmitState = "idle" | "submitting" | "success";
 
-export default function OnboardingFlow({ questions }: OnboardingFlowProps) {
-    const [answers, setAnswers] = useState<Record<string, string>>({});
+export default function OnboardingFlow({ questions, onComplete }: OnboardingFlowProps) {
+    const [answers, setAnswers] = useState<Record<string, string[]>>({});
     const [submitState, setSubmitState] = useState<SubmitState>("idle");
     const [traits, setTraits] = useState<Record<string, number> | null>(null);
     const { candidateId } = useCandidate();
     const { showToast } = useToast();
 
-    const answeredCount = Object.keys(answers).length;
+    const answeredCount = Object.keys(answers).filter((k) => answers[k].length > 0).length;
     const totalQuestions = questions.length;
     const allAnswered = answeredCount === totalQuestions;
 
     const selectAnswer = useCallback((questionId: string, optionKey: string) => {
-        setAnswers((prev) => ({ ...prev, [questionId]: optionKey }));
+        setAnswers((prev) => {
+            const current = prev[questionId] || [];
+            if (current.includes(optionKey)) {
+                return { ...prev, [questionId]: current.filter((k) => k !== optionKey) };
+            } else {
+                return { ...prev, [questionId]: [...current, optionKey] };
+            }
+        });
     }, []);
 
     const handleSubmit = async () => {
@@ -147,12 +155,21 @@ export default function OnboardingFlow({ questions }: OnboardingFlowProps) {
                         </div>
                     )}
 
-                    <div className="flex items-center gap-2 mt-4 px-5 py-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-sm">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Onboarding Complete
-                    </div>
+                    {onComplete ? (
+                        <button
+                            onClick={onComplete}
+                            className="w-full btn-primary py-3.5 text-base mt-2"
+                        >
+                            Continue to Technical Interview →
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-2 mt-4 px-5 py-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-sm mx-auto w-max">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Onboarding Complete
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -200,9 +217,9 @@ export default function OnboardingFlow({ questions }: OnboardingFlowProps) {
                             {/* Question Header */}
                             <div className="flex items-start gap-3 mb-5">
                                 <span
-                                    className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${answers[question.id]
-                                            ? "bg-violet-500 text-white"
-                                            : "bg-[var(--bg-primary)] text-[var(--text-muted)] border border-[var(--border)]"
+                                    className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${(answers[question.id] && answers[question.id].length > 0)
+                                        ? "bg-violet-500 text-white"
+                                        : "bg-[var(--bg-primary)] text-[var(--text-muted)] border border-[var(--border)]"
                                         }`}
                                 >
                                     {index + 1}
@@ -216,34 +233,36 @@ export default function OnboardingFlow({ questions }: OnboardingFlowProps) {
                             {/* Options */}
                             <div className="space-y-2.5 ml-11">
                                 {question.options.map((option) => {
-                                    const isSelected = answers[question.id] === option.key;
+                                    const isSelected = (answers[question.id] || []).includes(option.key);
                                     return (
                                         <button
                                             key={option.key}
                                             onClick={() => selectAnswer(question.id, option.key)}
                                             className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 flex items-center gap-3 group ${isSelected
-                                                    ? "border-violet-500 bg-violet-500/10 shadow-[0_0_15px_rgba(124,58,237,0.15)]"
-                                                    : "border-[var(--border)] bg-[var(--bg-primary)]/50 hover:border-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)]"
+                                                ? "border-violet-500 bg-violet-500/10 shadow-[0_0_15px_rgba(124,58,237,0.15)]"
+                                                : "border-[var(--border)] bg-[var(--bg-primary)]/50 hover:border-[var(--text-muted)] hover:bg-[var(--bg-surface-hover)]"
                                                 }`}
                                             id={`option-${question.id}-${option.key}`}
                                         >
-                                            {/* Radio Circle */}
+                                            {/* Checkbox Square */}
                                             <span
-                                                className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected
-                                                        ? "border-violet-500 bg-violet-500"
-                                                        : "border-[var(--text-muted)] group-hover:border-[var(--text-secondary)]"
+                                                className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isSelected
+                                                    ? "border-violet-500 bg-violet-500"
+                                                    : "border-[var(--text-muted)] group-hover:border-[var(--text-secondary)]"
                                                     }`}
                                             >
                                                 {isSelected && (
-                                                    <span className="w-2 h-2 rounded-full bg-white" />
+                                                    <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
                                                 )}
                                             </span>
 
                                             {/* Option Key Badge */}
                                             <span
                                                 className={`flex-shrink-0 w-6 h-6 rounded-md text-xs font-bold flex items-center justify-center ${isSelected
-                                                        ? "bg-violet-500/20 text-violet-300"
-                                                        : "bg-[var(--bg-surface)] text-[var(--text-muted)]"
+                                                    ? "bg-violet-500/20 text-violet-300"
+                                                    : "bg-[var(--bg-surface)] text-[var(--text-muted)]"
                                                     }`}
                                             >
                                                 {option.key}
