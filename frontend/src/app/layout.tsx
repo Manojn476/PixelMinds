@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InterviewIQ — Smart Onboarding",
+  title: "Pixelmind — Smart Onboarding",
   description:
     "Upload your resume and complete your onboarding in minutes with AI-powered parsing.",
 };

@@ -77,3 +77,53 @@ export async function submitOnboarding(
     }
     return res.json();
 }
+
+// ─── AI Interview Endpoints ─────────────────────────────────
+
+export async function startInterview(
+    candidateId: string,
+    jobRole: string,
+    technicalFirst: boolean = true
+): Promise<Record<string, unknown>> {
+    const res = await fetch(`${API_BASE}/api/interview/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            candidate_id: candidateId,
+            job_role: jobRole,
+            technical_first: technicalFirst
+        }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Failed to start interview");
+    }
+    return res.json();
+}
+
+export async function answerInterview(
+    sessionId: string,
+    answer: string
+): Promise<Record<string, unknown>> {
+    const res = await fetch(`${API_BASE}/api/interview/answer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, answer }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Failed to submit answer");
+    }
+    return res.json();
+}
+
+export async function getInterviewSession(
+    sessionId: string
+): Promise<Record<string, unknown>> {
+    const res = await fetch(`${API_BASE}/api/interview/session/${sessionId}`);
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Failed to fetch interview session");
+    }
+    return res.json();
+}

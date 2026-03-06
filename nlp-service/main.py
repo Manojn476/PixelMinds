@@ -1,5 +1,5 @@
 """
-InterviewIQ NLP Microservice
+Pixelmind NLP Microservice
 Decoupled resume parsing service on port 8001.
 Accepts PDF/DOCX uploads, extracts structured data using spaCy + custom rules.
 """
@@ -16,7 +16,7 @@ from extractor import extract_resume_data
 load_dotenv()
 
 app = FastAPI(
-    title="InterviewIQ NLP Service",
+    title="Pixelmind NLP Service",
     description="Resume parsing microservice using spaCy + custom rules",
     version="1.0.0",
 )

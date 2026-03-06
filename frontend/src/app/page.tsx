@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import ResumeUpload from "@/components/ResumeUpload";
 import ResumePreview from "@/components/ResumePreview";
 import OnboardingFlow, { MCQQuestion } from "@/components/OnboardingFlow";
+import InterviewFlow from "@/components/InterviewFlow";
 
-type AppStep = "upload" | "preview" | "onboarding";
+type AppStep = "upload" | "preview" | "onboarding" | "interview";
 
 // 15 predefined MCQ questions from Onboarding Questions PDF
 const ONBOARDING_QUESTIONS: MCQQuestion[] = [
@@ -173,7 +174,13 @@ export default function Home() {
         <ResumePreview onContinue={() => setStep("onboarding")} />
       )}
       {step === "onboarding" && (
-        <OnboardingFlow questions={ONBOARDING_QUESTIONS} />
+        <OnboardingFlow
+          questions={ONBOARDING_QUESTIONS}
+          onComplete={() => setStep("interview")}
+        />
+      )}
+      {step === "interview" && (
+        <InterviewFlow />
       )}
     </main>
   );

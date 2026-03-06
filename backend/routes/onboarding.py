@@ -111,21 +111,29 @@ TRAIT_MAPPING = {
 }
 
 
+from typing import Dict, List, Union
+
 def compute_trait_scores(answers: dict) -> dict:
     """
     Compute normalized trait scores from MCQ answers.
-    Formula from PDF: sum weights per trait, then divide by count (average).
+    Handles multiple selected options per question.
     """
     trait_scores = defaultdict(float)
     trait_counts = defaultdict(int)
 
-    for qid, option in answers.items():
+    for qid, options in answers.items():
         if qid not in TRAIT_MAPPING:
             continue
-        option_traits = TRAIT_MAPPING[qid].get(option, {})
-        for trait, weight in option_traits.items():
-            trait_scores[trait] += weight
-            trait_counts[trait] += 1
+            
+        # Ensure options is a list (for backward compatibility if needed)
+        if isinstance(options, str):
+            options = [options]
+            
+        for option in options:
+            option_traits = TRAIT_MAPPING[qid].get(option, {})
+            for trait, weight in option_traits.items():
+                trait_scores[trait] += weight
+                trait_counts[trait] += 1
 
     # Normalize: average score per trait
     normalized = {}
@@ -137,7 +145,7 @@ def compute_trait_scores(answers: dict) -> dict:
 
 class OnboardingSubmission(BaseModel):
     candidate_id: str
-    answers: dict  # {"q1": "A", "q2": "B", ...}
+    answers: Dict[str, Union[List[str], str]]  # e.g. {"q1": ["A", "C"], "q2": ["B"]}
 
 
 @router.post("/submit")

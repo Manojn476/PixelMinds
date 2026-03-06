@@ -1,5 +1,5 @@
 """
-InterviewIQ Main Backend
+Pixelmind Main Backend
 FastAPI server on port 8000 — handles resume uploads, candidate data, and onboarding.
 """
 
@@ -36,8 +36,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="InterviewIQ Backend",
-    description="Main API server for InterviewIQ Onboarding",
+    title="Pixelmind Backend",
+    description="Main API server for Pixelmind Onboarding",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -72,10 +72,13 @@ async def global_exception_handler(request: Request, exc: Exception):
 app.include_router(resume_router, prefix="/api/resume", tags=["Resume"])
 app.include_router(onboarding_router, prefix="/api/onboarding", tags=["Onboarding"])
 
+from interview.router import router as interview_router
+app.include_router(interview_router)
+
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "interviewiq-backend"}
+    return {"status": "ok", "service": "pixelmind-backend"}
 
 
 if __name__ == "__main__":
